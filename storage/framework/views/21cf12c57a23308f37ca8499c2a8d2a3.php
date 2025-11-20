@@ -1,13 +1,13 @@
-@extends('layouts.app')
 
-@section('title', 'Balance General')
 
-@section('content')
+<?php $__env->startSection('title', 'Balance General'); ?>
+
+<?php $__env->startSection('content'); ?>
 <div class="space-y-6">
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Balance General</h1>
         <form method="GET" class="flex gap-2">
-            <input type="date" name="date" value="{{ $endDate }}" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+            <input type="date" name="date" value="<?php echo e($endDate); ?>" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Consultar</button>
         </form>
     </div>
@@ -28,23 +28,23 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Al {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</h2>
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Al <?php echo e(\Carbon\Carbon::parse($endDate)->format('d/m/Y')); ?></h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">ACTIVO</h3>
                 <div class="space-y-2">
-                    @foreach($balanceSheet['assets']['accounts'] ?? [] as $account)
-                        @if(abs($account['balance']) > 0.01)
+                    <?php $__currentLoopData = $balanceSheet['assets']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(abs($account['balance']) > 0.01): ?>
                         <div class="flex justify-between text-gray-900 dark:text-white">
-                            <span>{{ $account['code'] }} - {{ $account['name'] }}</span>
-                            <span>${{ number_format(abs($account['balance']), 2) }}</span>
+                            <span><?php echo e($account['code']); ?> - <?php echo e($account['name']); ?></span>
+                            <span>$<?php echo e(number_format(abs($account['balance']), 2)); ?></span>
                         </div>
-                        @endif
-                    @endforeach
+                        <?php endif; ?>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     <div class="border-t pt-2 font-bold flex justify-between text-gray-900 dark:text-white">
                         <span>Total Activo</span>
-                        <span>${{ number_format($balanceSheet['total_assets'], 2) }}</span>
+                        <span>$<?php echo e(number_format($balanceSheet['total_assets'], 2)); ?></span>
                     </div>
                 </div>
             </div>
@@ -52,25 +52,25 @@
             <div>
                 <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">PASIVO Y CAPITAL</h3>
                 <div class="space-y-2">
-                    @foreach($balanceSheet['liabilities']['accounts'] ?? [] as $account)
-                        @if(abs($account['balance']) > 0.01)
+                    <?php $__currentLoopData = $balanceSheet['liabilities']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(abs($account['balance']) > 0.01): ?>
                         <div class="flex justify-between text-gray-900 dark:text-white">
-                            <span>{{ $account['code'] }} - {{ $account['name'] }}</span>
-                            <span>${{ number_format(abs($account['balance']), 2) }}</span>
+                            <span><?php echo e($account['code']); ?> - <?php echo e($account['name']); ?></span>
+                            <span>$<?php echo e(number_format(abs($account['balance']), 2)); ?></span>
                         </div>
-                        @endif
-                    @endforeach
-                    @foreach($balanceSheet['equity']['accounts'] ?? [] as $account)
-                        @if(abs($account['balance']) > 0.01)
+                        <?php endif; ?>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <?php $__currentLoopData = $balanceSheet['equity']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(abs($account['balance']) > 0.01): ?>
                         <div class="flex justify-between text-gray-900 dark:text-white">
-                            <span>{{ $account['code'] }} - {{ $account['name'] }}</span>
-                            <span>${{ number_format(abs($account['balance']), 2) }}</span>
+                            <span><?php echo e($account['code']); ?> - <?php echo e($account['name']); ?></span>
+                            <span>$<?php echo e(number_format(abs($account['balance']), 2)); ?></span>
                         </div>
-                        @endif
-                    @endforeach
+                        <?php endif; ?>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     <div class="border-t pt-2 font-bold flex justify-between text-gray-900 dark:text-white">
                         <span>Total Pasivo + Capital</span>
-                        <span>${{ number_format($balanceSheet['total_liabilities'] + $balanceSheet['total_equity'], 2) }}</span>
+                        <span>$<?php echo e(number_format($balanceSheet['total_liabilities'] + $balanceSheet['total_equity'], 2)); ?></span>
                     </div>
                 </div>
             </div>
@@ -83,45 +83,45 @@
     // Datos para gráficas
     const assetsData = {
         labels: [
-            @foreach($balanceSheet['assets']['accounts'] ?? [] as $account)
-                @if(abs($account['balance']) > 0.01)
-                '{{ $account['code'] }} - {{ $account['name'] }}',
-                @endif
-            @endforeach
+            <?php $__currentLoopData = $balanceSheet['assets']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php if(abs($account['balance']) > 0.01): ?>
+                '<?php echo e($account['code']); ?> - <?php echo e($account['name']); ?>',
+                <?php endif; ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         ],
         values: [
-            @foreach($balanceSheet['assets']['accounts'] ?? [] as $account)
-                @if(abs($account['balance']) > 0.01)
-                {{ abs($account['balance']) }},
-                @endif
-            @endforeach
+            <?php $__currentLoopData = $balanceSheet['assets']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php if(abs($account['balance']) > 0.01): ?>
+                <?php echo e(abs($account['balance'])); ?>,
+                <?php endif; ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         ]
     };
 
     const liabilitiesData = {
         labels: [
-            @foreach($balanceSheet['liabilities']['accounts'] ?? [] as $account)
-                @if(abs($account['balance']) > 0.01)
-                '{{ $account['code'] }} - {{ $account['name'] }}',
-                @endif
-            @endforeach
-            @foreach($balanceSheet['equity']['accounts'] ?? [] as $account)
-                @if(abs($account['balance']) > 0.01)
-                '{{ $account['code'] }} - {{ $account['name'] }}',
-                @endif
-            @endforeach
+            <?php $__currentLoopData = $balanceSheet['liabilities']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php if(abs($account['balance']) > 0.01): ?>
+                '<?php echo e($account['code']); ?> - <?php echo e($account['name']); ?>',
+                <?php endif; ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            <?php $__currentLoopData = $balanceSheet['equity']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php if(abs($account['balance']) > 0.01): ?>
+                '<?php echo e($account['code']); ?> - <?php echo e($account['name']); ?>',
+                <?php endif; ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         ],
         values: [
-            @foreach($balanceSheet['liabilities']['accounts'] ?? [] as $account)
-                @if(abs($account['balance']) > 0.01)
-                {{ abs($account['balance']) }},
-                @endif
-            @endforeach
-            @foreach($balanceSheet['equity']['accounts'] ?? [] as $account)
-                @if(abs($account['balance']) > 0.01)
-                {{ abs($account['balance']) }},
-                @endif
-            @endforeach
+            <?php $__currentLoopData = $balanceSheet['liabilities']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php if(abs($account['balance']) > 0.01): ?>
+                <?php echo e(abs($account['balance'])); ?>,
+                <?php endif; ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            <?php $__currentLoopData = $balanceSheet['equity']['accounts'] ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php if(abs($account['balance']) > 0.01): ?>
+                <?php echo e(abs($account['balance'])); ?>,
+                <?php endif; ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         ]
     };
 
@@ -214,5 +214,7 @@
         });
     }
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
 
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\Proyecto Contabilidad\resources\views/financial-statements/balance-sheet.blade.php ENDPATH**/ ?>

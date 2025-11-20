@@ -34,10 +34,18 @@ class BudgetController extends Controller
 
     public function create()
     {
+        // Si no hay periodos abiertos, mostrar todos los periodos
         $periods = FinancialPeriod::forTenant(Auth::user()->tenant_id)
             ->open()
             ->orderBy('start_date', 'desc')
             ->get();
+
+        // Si no hay periodos abiertos, obtener todos los periodos
+        if ($periods->isEmpty()) {
+            $periods = FinancialPeriod::forTenant(Auth::user()->tenant_id)
+                ->orderBy('start_date', 'desc')
+                ->get();
+        }
 
         $accounts = ChartAccount::forTenant(Auth::user()->tenant_id)
             ->where('allows_movements', true)

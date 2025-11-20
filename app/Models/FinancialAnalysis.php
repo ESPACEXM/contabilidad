@@ -10,6 +10,8 @@ class FinancialAnalysis extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'financial_analysis';
+
     protected $fillable = [
         'tenant_id',
         'name',
@@ -48,6 +50,23 @@ class FinancialAnalysis extends Model
     public function scopeForTenant($query, $tenantId)
     {
         return $query->where('tenant_id', $tenantId);
+    }
+
+    /**
+     * Resolver el route model binding considerando el tenant
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field = $field ?: $this->getRouteKeyName();
+        
+        // Si hay un usuario autenticado, filtrar por tenant
+        if (auth()->check() && auth()->user()->tenant_id) {
+            return $this->where($field, $value)
+                ->where('tenant_id', auth()->user()->tenant_id)
+                ->first();
+        }
+        
+        return $this->where($field, $value)->first();
     }
 
     // Cálculo de VAN (Valor Actual Neto)

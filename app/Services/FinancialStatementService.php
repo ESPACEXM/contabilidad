@@ -36,7 +36,7 @@ class FinancialStatementService
 
         $accounts = ChartAccount::forTenant($tenantId)
             ->whereIn('type', ['activo', 'pasivo', 'capital'])
-            ->with('children')
+            ->with(['children.children.children'])
             ->get();
 
         $balances = $this->calculateAccountBalances($postedEntries);
@@ -63,6 +63,7 @@ class FinancialStatementService
 
         $accounts = ChartAccount::forTenant($tenantId)
             ->whereIn('type', ['ingreso', 'egreso'])
+            ->with(['children.children.children'])
             ->get();
 
         $balances = $this->calculateAccountBalances($postedEntries);
@@ -120,19 +121,55 @@ class FinancialStatementService
     protected function calculateAccountBalances($entries): array
     {
         $balances = [];
+        
+        // Primero, obtener todos los IDs de cuentas involucradas
+        $accountIds = [];
+        foreach ($entries as $entry) {
+            foreach ($entry->items as $item) {
+                $accountIds[] = $item->chart_account_id;
+            }
+        }
+        
+        // Obtener las cuentas con sus saldos iniciales y naturaleza
+        $accounts = ChartAccount::forTenant($this->tenant->id)
+            ->whereIn('id', array_unique($accountIds))
+            ->get()
+            ->keyBy('id');
 
+        // Inicializar balances con saldos iniciales
+        foreach ($accounts as $accountId => $account) {
+            $balances[$accountId] = $account->initial_balance ?? 0;
+        }
+
+        // Calcular movimientos según la naturaleza de la cuenta
         foreach ($entries as $entry) {
             foreach ($entry->items as $item) {
                 $accountId = $item->chart_account_id;
+                $account = $accounts->get($accountId);
+                
+                if (!$account) {
+                    continue;
+                }
                 
                 if (!isset($balances[$accountId])) {
-                    $balances[$accountId] = 0;
+                    $balances[$accountId] = $account->initial_balance ?? 0;
                 }
 
-                if ($item->type === 'debit') {
-                    $balances[$accountId] += $item->amount;
+                // Aplicar movimientos según naturaleza de la cuenta
+                if ($account->nature === 'deudora') {
+                    // Cuentas deudoras: aumentan con débitos, disminuyen con créditos
+                    if ($item->type === 'debit') {
+                        $balances[$accountId] += $item->amount;
+                    } else {
+                        $balances[$accountId] -= $item->amount;
+                    }
                 } else {
-                    $balances[$accountId] -= $item->amount;
+                    // Cuentas acreedoras: aumentan con créditos, disminuyen con débitos
+                    if ($item->type === 'credit') {
+                        $balances[$accountId] += $item->amount;
+                    } else {
+                        $balances[$accountId] -= $item->amount;
+                    }
                 }
             }
         }
@@ -163,8 +200,10 @@ class FinancialStatementService
     {
         $balance = $balances[$account->id] ?? 0;
 
-        foreach ($account->children as $child) {
-            $balance += $this->calculateAccountBalanceWithChildren($child, $balances);
+        if ($account->relationLoaded('children')) {
+            foreach ($account->children as $child) {
+                $balance += $this->calculateAccountBalanceWithChildren($child, $balances);
+            }
         }
 
         return $balance;

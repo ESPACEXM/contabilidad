@@ -53,8 +53,12 @@ class DashboardController extends Controller
             ->toArray();
 
         // Estadísticas de productos por categoría
-        $productsByCategory = Product::forTenant($tenantId)
-            ->join('product_categories', 'products.category_id', '=', 'product_categories.id')
+        $productsByCategory = Product::where('products.tenant_id', $tenantId)
+            ->join('product_categories', function($join) use ($tenantId) {
+                $join->on('products.category_id', '=', 'product_categories.id')
+                     ->where('product_categories.tenant_id', '=', $tenantId);
+            })
+            ->whereNull('products.deleted_at')
             ->selectRaw('product_categories.name, COUNT(*) as count')
             ->groupBy('product_categories.name')
             ->pluck('count', 'product_categories.name')

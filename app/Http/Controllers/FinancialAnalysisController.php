@@ -25,26 +25,54 @@ class FinancialAnalysisController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
-            'analysis_type' => 'required|in:van,tir,break_even,payback,profitability_index',
-            'initial_investment' => 'required|numeric|min:0',
-            'discount_rate' => 'nullable|numeric|min:0|max:100',
-            'cash_flows' => 'nullable|array',
-            'cash_flows.*' => 'nullable|numeric',
-            'fixed_costs' => 'nullable|numeric|min:0',
-            'variable_cost_per_unit' => 'nullable|numeric|min:0',
-            'selling_price_per_unit' => 'nullable|numeric|min:0',
+            'analysis_type' => 'required|in:van,tir,break_even',
             'notes' => 'nullable|string',
-        ]);
+        ];
+
+        // Validaciones condicionales según el tipo de análisis
+        if (in_array($request->analysis_type, ['van', 'tir'])) {
+            $rules['initial_investment'] = 'required|numeric|min:0';
+            $rules['cash_flows_input'] = 'required|string';
+            if ($request->analysis_type === 'van') {
+                $rules['discount_rate'] = 'required|numeric|min:0|max:100';
+            }
+        } else if ($request->analysis_type === 'break_even') {
+            $rules['fixed_costs'] = 'required|numeric|min:0';
+            $rules['variable_cost_per_unit'] = 'required|numeric|min:0';
+            $rules['selling_price_per_unit'] = 'required|numeric|min:0';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Procesar flujos de efectivo
+        $cashFlows = [];
+        if ($request->has('cash_flows_input') && !empty($request->cash_flows_input)) {
+            // Si viene como texto separado por comas
+            $cashFlows = array_map(function($value) {
+                return floatval(trim($value));
+            }, explode(',', $request->cash_flows_input));
+            $cashFlows = array_filter($cashFlows, function($value) {
+                return $value !== 0 && !is_nan($value);
+            });
+            $cashFlows = array_values($cashFlows); // Reindexar
+        } else if ($request->has('cash_flows')) {
+            if (is_array($request->cash_flows)) {
+                $cashFlows = $request->cash_flows;
+            } else if (is_string($request->cash_flows)) {
+                $decoded = json_decode($request->cash_flows, true);
+                $cashFlows = is_array($decoded) ? $decoded : [];
+            }
+        }
 
         $analysis = FinancialAnalysis::create([
             'tenant_id' => Auth::user()->tenant_id,
             'name' => $validated['name'],
             'analysis_type' => $validated['analysis_type'],
-            'initial_investment' => $validated['initial_investment'],
+            'initial_investment' => $validated['initial_investment'] ?? 0,
             'discount_rate' => $validated['discount_rate'] ?? 0,
-            'cash_flows' => $validated['cash_flows'] ?? [],
+            'cash_flows' => $cashFlows,
             'fixed_costs' => $validated['fixed_costs'] ?? 0,
             'variable_cost_per_unit' => $validated['variable_cost_per_unit'] ?? 0,
             'selling_price_per_unit' => $validated['selling_price_per_unit'] ?? 0,
@@ -53,8 +81,8 @@ class FinancialAnalysisController extends Controller
         ]);
 
         // Calcular según el tipo de análisis
-        $result = $this->calculateAnalysis($analysis);
-        $analysis->update(['result_value' => $result]);
+        $this->calculateAnalysis($analysis);
+        $analysis->refresh();
 
         return redirect()->route('financial-analysis.show', $analysis)
             ->with('success', 'Análisis financiero creado exitosamente.');
@@ -62,7 +90,19 @@ class FinancialAnalysisController extends Controller
 
     public function show(FinancialAnalysis $financialAnalysis)
     {
-        $financialAnalysis->load('creator');
+        // El método resolveRouteBinding ya filtra por tenant, pero verificamos por seguridad
+        if ($financialAnalysis->tenant_id !== Auth::user()->tenant_id) {
+            abort(404);
+        }
+
+        // Cargar relaciones
+        $financialAnalysis->load(['creator', 'tenant']);
+
+        // Recalcular si no hay resultado o si los datos han cambiado
+        if (!$financialAnalysis->result_value || $financialAnalysis->result_value == 0) {
+            $result = $this->calculateAnalysis($financialAnalysis);
+            $financialAnalysis->refresh();
+        }
 
         $results = [];
         switch ($financialAnalysis->analysis_type) {
@@ -75,25 +115,26 @@ class FinancialAnalysisController extends Controller
             case 'break_even':
                 $results['break_even'] = $financialAnalysis->calculateBreakEven();
                 break;
-            case 'payback':
-                $results['payback_period'] = $financialAnalysis->calculatePaybackPeriod();
-                break;
-            case 'profitability_index':
-                $results['profitability_index'] = $financialAnalysis->calculateProfitabilityIndex();
-                break;
         }
 
         return view('financial-analysis.show', compact('financialAnalysis', 'results'));
     }
 
-    protected function calculateAnalysis(FinancialAnalysis $analysis): float
+    protected function calculateAnalysis(FinancialAnalysis $analysis): void
     {
-        return match($analysis->analysis_type) {
-            'van' => $analysis->calculateNPV(),
-            'tir' => $analysis->calculateIRR(),
-            'payback' => $analysis->calculatePaybackPeriod(),
-            'profitability_index' => $analysis->calculateProfitabilityIndex(),
-            default => 0,
-        };
+        switch($analysis->analysis_type) {
+            case 'van':
+                $analysis->calculateNPV();
+                break;
+            case 'tir':
+                $analysis->calculateIRR();
+                break;
+            case 'break_even':
+                $breakEven = $analysis->calculateBreakEven();
+                // Guardar el monto del punto de equilibrio como result_value
+                $analysis->result_value = $breakEven['amount'] ?? 0;
+                $analysis->save();
+                break;
+        }
     }
 }

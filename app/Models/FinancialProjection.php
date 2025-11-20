@@ -10,6 +10,8 @@ class FinancialProjection extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'financial_projections';
+
     protected $fillable = [
         'tenant_id',
         'name',

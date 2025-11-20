@@ -14,7 +14,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\FinancialPeriodController;
 use App\Http\Controllers\FinancialStatementController;
 use App\Http\Controllers\FinancialAnalysisController;
-use App\Http\Controllers\FinancialProjectionController;
+use App\Http\Controllers\GeneralLedgerController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -51,6 +51,9 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::post('/journal-entries/{journalEntry}/post', [JournalEntryController::class, 'post'])
         ->name('journal-entries.post');
     
+    // Libro Mayor
+    Route::get('/general-ledger', [GeneralLedgerController::class, 'index'])->name('general-ledger.index');
+    
     // Productos
     Route::resource('products', ProductController::class);
     
@@ -85,15 +88,8 @@ Route::middleware(['auth', 'tenant'])->group(function () {
             ->name('income-statement');
         Route::get('/cash-flow', [FinancialStatementController::class, 'cashFlowStatement'])
             ->name('cash-flow');
-        Route::get('/analysis', [FinancialStatementController::class, 'analysis'])
-            ->name('analysis');
     });
     
     // Análisis Financiero (VAN, TIR, Punto de Equilibrio)
     Route::resource('financial-analysis', FinancialAnalysisController::class);
-    
-    // Proyecciones Financieras
-    Route::resource('financial-projections', FinancialProjectionController::class);
-    Route::post('/financial-projections/{financialProjection}/calculate', [FinancialProjectionController::class, 'calculate'])
-        ->name('financial-projections.calculate');
 });
