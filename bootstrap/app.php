@@ -11,11 +11,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Forzar HTTPS en producción ANTES de cualquier otra cosa
-        if (app()->environment('production') || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
-        }
-        
         $middleware->web(append: [
             \App\Http\Middleware\HandleTenant::class,
         ]);

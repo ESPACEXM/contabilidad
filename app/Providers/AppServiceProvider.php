@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,11 +18,21 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::preventLazyLoading(! $this->app->isProduction());
 
-        // Forzar HTTPS en producción para todas las URLs (ejecutar muy temprano)
-        if ($this->app->environment('production') || 
-            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
-            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+        // Forzar HTTPS en producción para todas las URLs
+        // Verificar múltiples indicadores de HTTPS (Render usa proxies)
+        $isHttps = false;
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+            $isHttps = true;
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            $isHttps = true;
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+            $isHttps = true;
+        } elseif ($this->app->environment('production')) {
+            $isHttps = true;
+        }
+        
+        if ($isHttps) {
+            URL::forceScheme('https');
             
             // También forzar en la configuración de la app
             $appUrl = config('app.url');
