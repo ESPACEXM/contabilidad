@@ -6,6 +6,24 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistema Contabilidad') - {{ config('app.name', 'Laravel') }}</title>
     @php
+        // Función helper para forzar HTTPS en producción
+        $forceHttps = function($url) {
+            // Si la URL ya es absoluta y es HTTP, cambiarla a HTTPS
+            if (str_starts_with($url, 'http://')) {
+                return str_replace('http://', 'https://', $url);
+            }
+            // Si es relativa, usar secure_asset() o url() con HTTPS
+            if (str_starts_with($url, '/')) {
+                $baseUrl = config('app.url', 'https://' . request()->getHost());
+                // Asegurar que baseUrl use HTTPS
+                if (str_starts_with($baseUrl, 'http://')) {
+                    $baseUrl = str_replace('http://', 'https://', $baseUrl);
+                }
+                return rtrim($baseUrl, '/') . $url;
+            }
+            return $url;
+        };
+        
         // Intentar usar el helper de Vite de Laravel primero (más confiable)
         try {
             $vite = app('Illuminate\Foundation\Vite');
@@ -19,17 +37,21 @@
                     $manifest = json_decode($manifestContent, true);
                     
                     if ($manifest && is_array($manifest)) {
-                        // CSS - usar asset() para URLs relativas que Laravel maneja mejor
+                        // CSS - usar secure_asset() o forzar HTTPS
                         if (isset($manifest['resources/css/app.css']['file'])) {
                             $cssFile = $manifest['resources/css/app.css']['file'];
-                            $cssUrl = asset('build/' . $cssFile);
+                            $cssUrl = secure_asset('build/' . $cssFile);
+                            // Asegurar HTTPS
+                            $cssUrl = $forceHttps($cssUrl);
                             echo '<link rel="stylesheet" href="' . htmlspecialchars($cssUrl) . '">' . "\n";
                         }
                         
                         // JS
                         if (isset($manifest['resources/js/app.js']['file'])) {
                             $jsFile = $manifest['resources/js/app.js']['file'];
-                            $jsUrl = asset('build/' . $jsFile);
+                            $jsUrl = secure_asset('build/' . $jsFile);
+                            // Asegurar HTTPS
+                            $jsUrl = $forceHttps($jsUrl);
                             echo '<script type="module" src="' . htmlspecialchars($jsUrl) . '"></script>' . "\n";
                         }
                     } else {

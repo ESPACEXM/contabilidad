@@ -26,6 +26,8 @@ APP_DEBUG=false
 APP_TIMEZONE=UTC
 APP_URL=http://localhost
 ASSET_URL=
+# Forzar HTTPS en producción (Render usa HTTPS)
+FORCE_HTTPS=true
 
 APP_LOCALE=es
 APP_FALLBACK_LOCALE=es

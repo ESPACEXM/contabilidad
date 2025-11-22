@@ -17,6 +17,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::preventLazyLoading(! $this->app->isProduction());
 
+        // Forzar HTTPS en producción para assets
+        if ($this->app->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Helper Blade para Vite con fallback
         Blade::directive('viteSafe', function ($expression) {
             return "<?php try { echo app('Illuminate\\Foundation\\Vite')($expression); } catch (\\Illuminate\\Foundation\\ViteManifestNotFoundException \$e) { echo '<!-- Vite manifest not found, using fallback -->'; } ?>";
