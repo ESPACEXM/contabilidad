@@ -52,17 +52,14 @@ RUN composer install \
     --no-interaction \
     --ignore-platform-reqs
 
-# Copiar archivos de configuración de Node.js (para cache)
-COPY package.json package-lock.json* ./
+# Copiar TODOS los archivos del proyecto (excepto los que están en .dockerignore)
+COPY . .
 
 # Instalar dependencias de Node.js (incluyendo dev para compilar)
 # Luego compilar assets y limpiar node_modules para reducir tamaño
 RUN npm ci --no-audit --no-fund || npm install --no-audit --no-fund || true
 RUN npm run build || true
 RUN rm -rf node_modules || true
-
-# Copiar el resto de los archivos del proyecto
-COPY . .
 
 # Limpiar cache de servicios que puede tener referencias a dependencias de desarrollo
 RUN rm -f bootstrap/cache/services.php bootstrap/cache/packages.php || true

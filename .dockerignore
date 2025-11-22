@@ -27,4 +27,5 @@ docker-compose.yml
 database/*.sqlite
 database/*.sqlite-journal
 storage/logs/*.log
+# NO excluir /public/build - se compilará durante el build
 

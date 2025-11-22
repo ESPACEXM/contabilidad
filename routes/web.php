@@ -20,6 +20,15 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Endpoint de ping para keep-alive (sin middleware para que sea rápido)
+Route::get('/ping', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toIso8601String(),
+        'message' => 'Server is alive'
+    ]);
+})->name('ping');
+
 // Rutas públicas (sin tenant)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

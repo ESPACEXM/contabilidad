@@ -5,15 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistema Contabilidad') - {{ config('app.name', 'Laravel') }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @if(config('app.debug'))
-        <script>
-            // Fallback para desarrollo si Vite no está corriendo
-            if (typeof window.Vite === 'undefined') {
-                console.warn('Vite no está corriendo. Los assets pueden no cargar correctamente.');
+    @php
+        $viteManifest = public_path('build/manifest.json');
+        if (file_exists($viteManifest)) {
+            try {
+                echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']);
+            } catch (\Exception $e) {
+                // Si el manifest existe pero hay error, intentar leerlo manualmente
+                $manifest = json_decode(file_get_contents($viteManifest), true);
+                if (isset($manifest['resources/css/app.css']['file'])) {
+                    echo '<link rel="stylesheet" href="' . asset('build/' . $manifest['resources/css/app.css']['file']) . '">';
+                }
+                if (isset($manifest['resources/js/app.js']['file'])) {
+                    echo '<script type="module" src="' . asset('build/' . $manifest['resources/js/app.js']['file']) . '"></script>';
+                }
             }
-        </script>
-    @endif
+        } else {
+            // Fallback: usar CDN para Alpine.js y estilos mínimos
+            echo '<!-- Vite assets not compiled, using fallback -->';
+            echo '<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>';
+            echo '<style>[x-cloak]{display:none!important}</style>';
+        }
+    @endphp
     @livewireStyles
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
