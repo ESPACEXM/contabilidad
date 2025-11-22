@@ -6,6 +6,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistema Contabilidad') - {{ config('app.name', 'Laravel') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if(config('app.debug'))
+        <script>
+            // Fallback para desarrollo si Vite no está corriendo
+            if (typeof window.Vite === 'undefined') {
+                console.warn('Vite no está corriendo. Los assets pueden no cargar correctamente.');
+            }
+        </script>
+    @endif
     @livewireStyles
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">

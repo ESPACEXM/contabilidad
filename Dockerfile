@@ -1,7 +1,7 @@
 # Dockerfile para Sistema de Gestión Contable Laravel
 FROM php:8.3-fpm
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema (incluyendo Node.js para compilar assets)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev \
     nginx \
     supervisor \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensiones PHP necesarias para Laravel
@@ -49,6 +51,15 @@ RUN composer install \
     --prefer-dist \
     --no-interaction \
     --ignore-platform-reqs
+
+# Copiar archivos de configuración de Node.js (para cache)
+COPY package.json package-lock.json* ./
+
+# Instalar dependencias de Node.js (incluyendo dev para compilar)
+# Luego compilar assets y limpiar node_modules para reducir tamaño
+RUN npm ci --no-audit --no-fund || npm install --no-audit --no-fund || true
+RUN npm run build || true
+RUN rm -rf node_modules || true
 
 # Copiar el resto de los archivos del proyecto
 COPY . .
