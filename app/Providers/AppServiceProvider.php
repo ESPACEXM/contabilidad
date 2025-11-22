@@ -17,9 +17,13 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::preventLazyLoading(! $this->app->isProduction());
 
-        // Forzar HTTPS en producción para assets
-        if ($this->app->environment('production')) {
+        // Forzar HTTPS en producción para todas las URLs
+        if ($this->app->environment('production') || request()->secure()) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
+            // También forzar en la configuración de la app
+            if (config('app.url') && str_starts_with(config('app.url'), 'http://')) {
+                config(['app.url' => str_replace('http://', 'https://', config('app.url'))]);
+            }
         }
 
         // Helper Blade para Vite con fallback

@@ -24,10 +24,18 @@
             return $url;
         };
         
+        // Forzar HTTPS antes de generar URLs
+        if (request()->secure() || app()->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+        
         // Intentar usar el helper de Vite de Laravel primero (más confiable)
         try {
             $vite = app('Illuminate\Foundation\Vite');
-            echo $vite(['resources/css/app.css', 'resources/js/app.js']);
+            $viteOutput = $vite(['resources/css/app.css', 'resources/js/app.js']);
+            // Forzar HTTPS en la salida del helper de Vite
+            $viteOutput = str_replace('http://', 'https://', $viteOutput);
+            echo $viteOutput;
         } catch (\Exception $e) {
             // Si falla, leer el manifest manualmente
             $viteManifest = public_path('build/manifest.json');
