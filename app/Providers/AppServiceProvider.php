@@ -17,12 +17,16 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::preventLazyLoading(! $this->app->isProduction());
 
-        // Forzar HTTPS en producción para todas las URLs
-        if ($this->app->environment('production') || request()->secure()) {
+        // Forzar HTTPS en producción para todas las URLs (ejecutar muy temprano)
+        if ($this->app->environment('production') || 
+            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
+            
             // También forzar en la configuración de la app
-            if (config('app.url') && str_starts_with(config('app.url'), 'http://')) {
-                config(['app.url' => str_replace('http://', 'https://', config('app.url'))]);
+            $appUrl = config('app.url');
+            if ($appUrl && substr($appUrl, 0, 7) === 'http://') {
+                config(['app.url' => str_replace('http://', 'https://', $appUrl)]);
             }
         }
 
