@@ -42,6 +42,16 @@ QUEUE_CONNECTION=sync
 EOF
 fi
 
+# CRÍTICO: Crear directorios de cache ANTES de cualquier comando artisan
+echo "📁 Creando directorios de cache..."
+mkdir -p /var/www/html/bootstrap/cache
+mkdir -p /var/www/html/storage/framework/cache
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
+mkdir -p /var/www/html/storage/logs
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
 # CRÍTICO: Eliminar cache de servicios ANTES de cualquier comando artisan
 # El cache puede tener referencias a dependencias de desarrollo que no están instaladas
 echo "🧹 Limpiando cache de servicios..."
@@ -72,9 +82,9 @@ php artisan config:cache 2>/dev/null || true
 php artisan route:cache 2>/dev/null || true
 php artisan view:cache 2>/dev/null || true
 
-# Asegurar permisos
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Asegurar permisos (por si acaso)
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
 
 echo "✅ Aplicación lista!"
 echo "🌐 Iniciando servidor en http://0.0.0.0:8000"

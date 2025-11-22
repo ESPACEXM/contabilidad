@@ -72,14 +72,17 @@ RUN composer dump-autoload \
     --no-dev \
     --no-scripts
 
-# Configurar permisos
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
-
-# Crear directorio para base de datos SQLite si no existe
-RUN mkdir -p /var/www/html/database \
-    && chown -R www-data:www-data /var/www/html/database
+# Crear directorios necesarios y configurar permisos
+RUN mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/storage/logs \
+    && mkdir -p /var/www/html/database \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache \
+    && chmod -R 755 /var/www/html/database
 
 # Copiar configuración de PHP
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
