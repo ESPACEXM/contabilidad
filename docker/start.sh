@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+# No usar set -e para permitir que los comandos fallen sin detener el script
+set +e
 
 echo "🚀 Iniciando Sistema de Gestión Contable..."
 
@@ -41,32 +42,35 @@ QUEUE_CONNECTION=sync
 EOF
 fi
 
-# Ejecutar scripts de Composer que se saltaron durante el build
-echo "📦 Ejecutando scripts de Composer..."
-composer run-script post-autoload-dump || true
+# CRÍTICO: Eliminar cache de servicios ANTES de cualquier comando artisan
+# El cache puede tener referencias a dependencias de desarrollo que no están instaladas
+echo "🧹 Limpiando cache de servicios..."
+rm -rf bootstrap/cache/services.php bootstrap/cache/packages.php bootstrap/cache/config.php bootstrap/cache/routes*.php || true
 
-# Generar clave de aplicación si no existe
+# Generar clave de aplicación si no existe (ANTES de otros comandos artisan)
 if ! grep -q "APP_KEY=base64:" /var/www/html/.env; then
     echo "🔑 Generando clave de aplicación..."
-    php artisan key:generate --force
+    # Usar script PHP directo para evitar cargar Laravel y sus dependencias
+    php /var/www/html/docker/generate-key.php 2>/dev/null || \
+    php -r "\$key='base64:'.base64_encode(random_bytes(32));\$f=file_get_contents('.env');file_put_contents('.env',preg_replace('/^APP_KEY=.*$/m',\"APP_KEY=\$key\",\$f)?:\$f.\"APP_KEY=\$key\n\");" || true
 fi
+
+# Limpiar caches de Laravel (después de tener APP_KEY)
+# Redirigir stderr a /dev/null para evitar errores de Collision
+php artisan config:clear 2>/dev/null || true
+php artisan cache:clear 2>/dev/null || true
+php artisan view:clear 2>/dev/null || true
+php artisan route:clear 2>/dev/null || true
 
 # Ejecutar migraciones
 echo "🔄 Ejecutando migraciones..."
-php artisan migrate --force || true
+php artisan migrate --force 2>/dev/null || true
 
-# Limpiar cache
-echo "🧹 Limpiando cache..."
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
-php artisan route:clear
-
-# Optimizar para producción
+# Optimizar para producción (ignorar errores de dependencias de desarrollo)
 echo "⚡ Optimizando aplicación..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:cache 2>/dev/null || true
+php artisan route:cache 2>/dev/null || true
+php artisan view:cache 2>/dev/null || true
 
 # Asegurar permisos
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

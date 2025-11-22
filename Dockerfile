@@ -41,8 +41,7 @@ WORKDIR /var/www/html
 # Copiar archivos de configuración de Composer primero (para cache)
 COPY composer.json composer.lock* ./
 
-# Instalar dependencias de Composer
-# Usar --no-dev para producción
+# Instalar dependencias de Composer (solo producción)
 RUN composer install \
     --no-dev \
     --no-scripts \
@@ -53,6 +52,9 @@ RUN composer install \
 
 # Copiar el resto de los archivos del proyecto
 COPY . .
+
+# Limpiar cache de servicios que puede tener referencias a dependencias de desarrollo
+RUN rm -f bootstrap/cache/services.php bootstrap/cache/packages.php || true
 
 # Ejecutar scripts de Composer y optimizar autoloader
 # Usar --no-scripts para evitar ejecutar artisan durante el build
@@ -77,8 +79,9 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
 # Exponer puerto
 EXPOSE 8000
 
-# Script de inicio
+# Script de inicio y utilidades
 COPY docker/start.sh /usr/local/bin/start.sh
+COPY docker/generate-key.php /var/www/html/docker/generate-key.php
 RUN chmod +x /usr/local/bin/start.sh
 
 # Comando para iniciar la aplicación
