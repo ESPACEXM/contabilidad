@@ -52,14 +52,30 @@ RUN composer install \
     --no-interaction \
     --ignore-platform-reqs
 
-# Copiar TODOS los archivos del proyecto (excepto los que están en .dockerignore)
-COPY . .
+# Copiar archivos necesarios para compilar assets PRIMERO
+COPY package.json package-lock.json* ./
+COPY vite.config.js tailwind.config.js postcss.config.js* ./
+COPY resources ./resources
+COPY public/index.php public/.htaccess* ./public/ 2>/dev/null || true
 
 # Instalar dependencias de Node.js (incluyendo dev para compilar)
-# Luego compilar assets y limpiar node_modules para reducir tamaño
-RUN npm ci --no-audit --no-fund || npm install --no-audit --no-fund || true
-RUN npm run build || true
+# Luego compilar assets ANTES de copiar el resto de archivos
+RUN echo "📦 Instalando dependencias npm..." && \
+    npm ci --no-audit --no-fund || npm install --no-audit --no-fund || true
+
+RUN echo "🔨 Compilando assets con Vite..." && \
+    npm run build && \
+    echo "✅ Assets compilados exitosamente" && \
+    ls -la public/build/ || true
+
+# Verificar que los assets se compilaron
+RUN test -f public/build/manifest.json && echo "✅ manifest.json encontrado" || (echo "❌ ERROR: manifest.json NO encontrado" && exit 1)
+
+# Limpiar node_modules para reducir tamaño
 RUN rm -rf node_modules || true
+
+# Copiar el resto de los archivos del proyecto (public/build ya está compilado)
+COPY . .
 
 # Limpiar cache de servicios que puede tener referencias a dependencias de desarrollo
 RUN rm -f bootstrap/cache/services.php bootstrap/cache/packages.php || true

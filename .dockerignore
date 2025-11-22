@@ -28,4 +28,6 @@ database/*.sqlite
 database/*.sqlite-journal
 storage/logs/*.log
 # NO excluir /public/build - se compilará durante el build
+# NO excluir /resources - necesario para compilar assets
+# NO excluir vite.config.js, tailwind.config.js, postcss.config.js
 
