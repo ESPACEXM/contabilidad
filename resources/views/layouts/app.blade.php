@@ -6,50 +6,47 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistema Contabilidad') - {{ config('app.name', 'Laravel') }}</title>
     @php
-        $viteManifest = public_path('build/manifest.json');
-        $assetsLoaded = false;
-        
-        if (file_exists($viteManifest)) {
-            try {
-                // Leer manifest y generar tags manualmente
-                $manifestContent = file_get_contents($viteManifest);
-                $manifest = json_decode($manifestContent, true);
-                
-                if ($manifest && is_array($manifest)) {
-                    // CSS
-                    if (isset($manifest['resources/css/app.css']['file'])) {
-                        $cssFile = $manifest['resources/css/app.css']['file'];
-                        $cssUrl = url('build/' . $cssFile);
-                        echo '<link rel="stylesheet" href="' . htmlspecialchars($cssUrl) . '">' . "\n";
-                    }
-                    
-                    // JS
-                    if (isset($manifest['resources/js/app.js']['file'])) {
-                        $jsFile = $manifest['resources/js/app.js']['file'];
-                        $jsUrl = url('build/' . $jsFile);
-                        echo '<script type="module" src="' . htmlspecialchars($jsUrl) . '"></script>' . "\n";
-                    }
-                    $assetsLoaded = true;
-                }
-            } catch (\Exception $e) {
-                // Si falla, intentar con el helper de Vite
+        // Intentar usar el helper de Vite de Laravel primero (más confiable)
+        try {
+            $vite = app('Illuminate\Foundation\Vite');
+            echo $vite(['resources/css/app.css', 'resources/js/app.js']);
+        } catch (\Exception $e) {
+            // Si falla, leer el manifest manualmente
+            $viteManifest = public_path('build/manifest.json');
+            if (file_exists($viteManifest)) {
                 try {
-                    echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']);
-                    $assetsLoaded = true;
-                } catch (\Exception $e2) {
-                    // Log en desarrollo
-                    if (config('app.debug')) {
-                        \Log::error('Vite error: ' . $e2->getMessage());
+                    $manifestContent = file_get_contents($viteManifest);
+                    $manifest = json_decode($manifestContent, true);
+                    
+                    if ($manifest && is_array($manifest)) {
+                        // CSS - usar asset() para URLs relativas que Laravel maneja mejor
+                        if (isset($manifest['resources/css/app.css']['file'])) {
+                            $cssFile = $manifest['resources/css/app.css']['file'];
+                            $cssUrl = asset('build/' . $cssFile);
+                            echo '<link rel="stylesheet" href="' . htmlspecialchars($cssUrl) . '">' . "\n";
+                        }
+                        
+                        // JS
+                        if (isset($manifest['resources/js/app.js']['file'])) {
+                            $jsFile = $manifest['resources/js/app.js']['file'];
+                            $jsUrl = asset('build/' . $jsFile);
+                            echo '<script type="module" src="' . htmlspecialchars($jsUrl) . '"></script>' . "\n";
+                        }
+                    } else {
+                        throw new \Exception('Manifest inválido');
                     }
+                } catch (\Exception $e2) {
+                    // Fallback final: CDN
+                    echo '<!-- Error cargando assets: ' . htmlspecialchars($e2->getMessage()) . ' -->' . "\n";
+                    echo '<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>' . "\n";
+                    echo '<style>[x-cloak]{display:none!important}</style>' . "\n";
                 }
+            } else {
+                // No existe manifest
+                echo '<!-- Manifest no encontrado en: ' . htmlspecialchars($viteManifest) . ' -->' . "\n";
+                echo '<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>' . "\n";
+                echo '<style>[x-cloak]{display:none!important}</style>' . "\n";
             }
-        }
-        
-        if (!$assetsLoaded) {
-            // Fallback: usar CDN
-            echo '<!-- Vite assets not found, using fallback -->' . "\n";
-            echo '<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>' . "\n";
-            echo '<style>[x-cloak]{display:none!important}</style>' . "\n";
         }
     @endphp
     @livewireStyles
