@@ -9,14 +9,14 @@
         // Función helper para forzar HTTPS en producción
         $forceHttps = function($url) {
             // Si la URL ya es absoluta y es HTTP, cambiarla a HTTPS
-            if (str_starts_with($url, 'http://')) {
+            if (substr($url, 0, 7) === 'http://') {
                 return str_replace('http://', 'https://', $url);
             }
             // Si es relativa, usar secure_asset() o url() con HTTPS
-            if (str_starts_with($url, '/')) {
+            if (substr($url, 0, 1) === '/') {
                 $baseUrl = config('app.url', 'https://' . request()->getHost());
                 // Asegurar que baseUrl use HTTPS
-                if (str_starts_with($baseUrl, 'http://')) {
+                if (substr($baseUrl, 0, 7) === 'http://') {
                     $baseUrl = str_replace('http://', 'https://', $baseUrl);
                 }
                 return rtrim($baseUrl, '/') . $url;

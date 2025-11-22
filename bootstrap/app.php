@@ -25,13 +25,5 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })
-    ->withMiddleware(function (Middleware $middleware) {
-        // Forzar HTTPS en producción (Render usa HTTPS)
-        if (app()->environment('production')) {
-            $middleware->validateCsrfTokens(except: [
-                // Excepciones si es necesario
-            ]);
-        }
-    })
     ->create();
 
