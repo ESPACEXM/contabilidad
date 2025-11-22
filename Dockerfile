@@ -56,7 +56,8 @@ RUN composer install \
 COPY package.json package-lock.json* ./
 COPY vite.config.js tailwind.config.js postcss.config.js* ./
 COPY resources ./resources
-COPY public/index.php public/.htaccess* ./public/ 2>/dev/null || true
+# Crear directorio public para que Vite pueda escribir ahí
+RUN mkdir -p ./public
 
 # Instalar dependencias de Node.js (incluyendo dev para compilar)
 # Luego compilar assets ANTES de copiar el resto de archivos
