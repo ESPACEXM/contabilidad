@@ -1,5 +1,5 @@
 # Dockerfile para Sistema de Gestión Contable Laravel
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
@@ -55,10 +55,12 @@ RUN composer install \
 COPY . .
 
 # Ejecutar scripts de Composer y optimizar autoloader
+# Usar --no-scripts para evitar ejecutar artisan durante el build
 RUN composer dump-autoload \
     --optimize \
     --classmap-authoritative \
-    --no-dev
+    --no-dev \
+    --no-scripts
 
 # Configurar permisos
 RUN chown -R www-data:www-data /var/www/html \

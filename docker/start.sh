@@ -41,6 +41,10 @@ QUEUE_CONNECTION=sync
 EOF
 fi
 
+# Ejecutar scripts de Composer que se saltaron durante el build
+echo "📦 Ejecutando scripts de Composer..."
+composer run-script post-autoload-dump || true
+
 # Generar clave de aplicación si no existe
 if ! grep -q "APP_KEY=base64:" /var/www/html/.env; then
     echo "🔑 Generando clave de aplicación..."
