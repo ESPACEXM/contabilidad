@@ -30,10 +30,10 @@ class RoleSeeder extends Seeder
         }
 
         // Crear roles
-        $superAdmin = Role::create(['name' => 'super-admin']);
-        $admin = Role::create(['name' => 'administrador']);
-        $accountant = Role::create(['name' => 'contador']);
-        $employee = Role::create(['name' => 'empleado']);
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
+        $admin = Role::firstOrCreate(['name' => 'administrador']);
+        $accountant = Role::firstOrCreate(['name' => 'contador']);
+        $employee = Role::firstOrCreate(['name' => 'empleado']);
 
         // Asignar permisos a roles
         $superAdmin->givePermissionTo(Permission::all());

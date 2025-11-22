@@ -79,6 +79,10 @@ php artisan route:clear 2>/dev/null || true
 echo "🔄 Ejecutando migraciones..."
 php artisan migrate --force 2>/dev/null || true
 
+# Ejecutar seeders solo si la base de datos está vacía
+echo "🌱 Ejecutando seeders..."
+php artisan db:seed --force 2>/dev/null || true
+
 # Optimizar para producción (ignorar errores de dependencias de desarrollo)
 echo "⚡ Optimizando aplicación..."
 php artisan config:cache 2>/dev/null || true

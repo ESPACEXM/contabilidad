@@ -22,36 +22,52 @@ class TenantSeeder extends Seeder
             'razon_social' => 'Empresa Demo Sociedad Anónima',
             'currency' => 'MXN',
             'is_active' => true,
-        ]);
+            ]
+        );
 
-        $admin = User::create([
-            'tenant_id' => $tenant->id,
-            'name' => 'Administrador Demo',
-            'email' => 'admin@demo.com',
-            'password' => Hash::make('password'),
-            'is_active' => true,
-        ]);
+        // Crear usuario admin solo si no existe
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@demo.com'],
+            [
+                'tenant_id' => $tenant->id,
+                'name' => 'Administrador Demo',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
 
-        $admin->assignRole('administrador');
+        // Asegurar que tenga el rol
+        if (!$admin->hasRole('administrador')) {
+            $admin->assignRole('administrador');
+        }
 
-        // Crear otro tenant de ejemplo
-        $tenant2 = Tenant::create([
+        // Crear otro tenant de ejemplo (opcional, solo si no existe)
+        $tenant2 = Tenant::firstOrCreate(
+            ['email' => 'contacto@minegocio.com'],
+            [
             'name' => 'Mi Negocio S.A.',
             'slug' => 'mi-negocio-' . Str::random(5),
             'email' => 'contacto@minegocio.com',
             'currency' => 'MXN',
             'is_active' => true,
-        ]);
+            ]
+        );
 
-        $admin2 = User::create([
-            'tenant_id' => $tenant2->id,
-            'name' => 'Juan Pérez',
-            'email' => 'juan@minegocio.com',
-            'password' => Hash::make('password'),
-            'is_active' => true,
-        ]);
+        // Crear usuario admin2 solo si no existe
+        $admin2 = User::firstOrCreate(
+            ['email' => 'juan@minegocio.com'],
+            [
+                'tenant_id' => $tenant2->id,
+                'name' => 'Juan Pérez',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
 
-        $admin2->assignRole('administrador');
+        // Asegurar que tenga el rol
+        if (!$admin2->hasRole('administrador')) {
+            $admin2->assignRole('administrador');
+        }
     }
 }
 
