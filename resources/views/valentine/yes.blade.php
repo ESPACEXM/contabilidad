@@ -30,9 +30,23 @@
         
         .confetti {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             animation: confetti-fall linear infinite;
+        }
+        
+        @media (min-width: 640px) {
+            .confetti {
+                width: 10px;
+                height: 10px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .confetti {
+                width: 12px;
+                height: 12px;
+            }
         }
         
         .bounce-in {
@@ -55,50 +69,50 @@
 <body class="celebration-bg min-h-screen flex items-center justify-center overflow-hidden">
     <div id="confetti-container" class="fixed inset-0 pointer-events-none"></div>
     
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-3xl mx-auto text-center space-y-8">
+    <div class="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div class="max-w-3xl mx-auto text-center space-y-4 sm:space-y-8">
             <!-- Celebración principal -->
             <div class="bounce-in">
-                <div class="text-9xl mb-6 pulse-big">🎉</div>
-                <h1 class="text-5xl md:text-7xl font-bold text-white drop-shadow-2xl mb-8">
+                <div class="text-6xl sm:text-7xl md:text-9xl mb-4 sm:mb-6 pulse-big">🎉</div>
+                <h1 class="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white drop-shadow-2xl mb-4 sm:mb-8 px-2">
                     ¡DIJISTE QUE SÍÍÍÍ!
                 </h1>
             </div>
             
-            <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 bounce-in" style="animation-delay: 0.2s;">
-                <div class="text-8xl mb-6 rotate-heart">💖</div>
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-8 md:p-12 bounce-in" style="animation-delay: 0.2s;">
+                <div class="text-5xl sm:text-6xl md:text-8xl mb-4 sm:mb-6 rotate-heart">💖</div>
                 
-                <div class="space-y-6">
-                    <h2 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-red-500">
+                <div class="space-y-4 sm:space-y-6 px-2">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-red-500">
                         ¡Eres la mejor San Valentín del mundo!
                     </h2>
                     
-                    <div class="text-xl md:text-2xl text-gray-700 space-y-4">
+                    <div class="text-base sm:text-xl md:text-2xl text-gray-700 space-y-3 sm:space-y-4">
                         <p>¡Me haces la persona más feliz del universo! 🌟</p>
                         <p>No puedo esperar para celebrar este día tan especial contigo</p>
                         <p class="font-bold text-pink-600">¡Te amo con todo mi corazón! 💕</p>
                     </div>
                     
-                    <div class="flex justify-center space-x-4 text-6xl pt-6">
+                    <div class="flex justify-center space-x-2 sm:space-x-4 text-4xl sm:text-5xl md:text-6xl pt-4 sm:pt-6">
                         <span class="pulse-big">❤️</span>
                         <span class="pulse-big" style="animation-delay: 0.2s;">💕</span>
                         <span class="pulse-big" style="animation-delay: 0.4s;">💖</span>
                         <span class="pulse-big" style="animation-delay: 0.6s;">💗</span>
                     </div>
                     
-                    <div class="pt-8 text-gray-600">
-                        <p class="text-lg mb-4">Este es solo el comienzo de una celebración increíble...</p>
-                        <p class="text-2xl font-bold text-red-500">¡Prepárate para muchas sorpresas! 🎁</p>
+                    <div class="pt-4 sm:pt-8 text-gray-600">
+                        <p class="text-sm sm:text-base md:text-lg mb-3 sm:mb-4">Este es solo el comienzo de una celebración increíble...</p>
+                        <p class="text-lg sm:text-xl md:text-2xl font-bold text-red-500">¡Prepárate para muchas sorpresas! 🎁</p>
                     </div>
                 </div>
             </div>
             
-            <div class="text-white text-xl md:text-2xl font-bold drop-shadow-lg bounce-in" style="animation-delay: 0.4s;">
+            <div class="text-white text-base sm:text-xl md:text-2xl font-bold drop-shadow-lg bounce-in px-3" style="animation-delay: 0.4s;">
                 <p>"Cada momento contigo es mi San Valentín perfecto" 💑</p>
             </div>
             
-            <div class="bounce-in" style="animation-delay: 0.6s;">
-                <a href="{{ route('valentine.index') }}" class="inline-block px-8 py-4 bg-white text-pink-600 text-lg font-bold rounded-full shadow-lg hover:bg-pink-50 transform hover:scale-105 transition-all duration-300">
+            <div class="bounce-in px-2" style="animation-delay: 0.6s;">
+                <a href="{{ route('valentine.index') }}" class="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-white text-pink-600 text-base sm:text-lg font-bold rounded-full shadow-lg hover:bg-pink-50 transform hover:scale-105 transition-all duration-300">
                     💝 Volver al inicio
                 </a>
             </div>
@@ -125,10 +139,12 @@
         }
         
         // Crear confetti continuamente
-        setInterval(createConfetti, 100);
+        const confettiInterval = window.innerWidth < 640 ? 200 : 100;
+        setInterval(createConfetti, confettiInterval);
         
-        // Crear muchos confetti al inicio
-        for (let i = 0; i < 50; i++) {
+        // Crear muchos confetti al inicio (menos en móviles)
+        const initialConfetti = window.innerWidth < 640 ? 30 : 50;
+        for (let i = 0; i < initialConfetti; i++) {
             setTimeout(createConfetti, i * 50);
         }
         
@@ -138,18 +154,22 @@
             const x = Math.random() * window.innerWidth;
             const y = Math.random() * window.innerHeight * 0.5;
             
-            for (let i = 0; i < 8; i++) {
+            // Menos partículas en móviles
+            const particleCount = window.innerWidth < 640 ? 6 : 8;
+            
+            for (let i = 0; i < particleCount; i++) {
                 const emoji = document.createElement('div');
                 emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
                 emoji.style.position = 'fixed';
                 emoji.style.left = x + 'px';
                 emoji.style.top = y + 'px';
-                emoji.style.fontSize = '24px';
+                emoji.style.fontSize = window.innerWidth < 640 ? '18px' : '24px';
                 emoji.style.pointerEvents = 'none';
+                emoji.style.zIndex = '1000';
                 document.body.appendChild(emoji);
                 
-                const angle = (Math.PI * 2 * i) / 8;
-                const velocity = 3;
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = window.innerWidth < 640 ? 2 : 3;
                 const vx = Math.cos(angle) * velocity;
                 const vy = Math.sin(angle) * velocity;
                 

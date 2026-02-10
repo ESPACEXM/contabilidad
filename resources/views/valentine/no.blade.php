@@ -30,8 +30,20 @@
         
         .tear {
             position: absolute;
-            font-size: 20px;
+            font-size: 16px;
             animation: fall 2s linear infinite;
+        }
+        
+        @media (min-width: 640px) {
+            .tear {
+                font-size: 20px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .tear {
+                font-size: 24px;
+            }
         }
         
         @keyframes fall {
@@ -45,32 +57,32 @@
 <body class="sad-bg min-h-screen flex items-center justify-center overflow-hidden">
     <div id="tears-container" class="fixed inset-0 pointer-events-none"></div>
     
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center fade-in">
-            <div class="text-9xl mb-6 cry-animation">😭</div>
+    <div class="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div class="max-w-2xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-8 md:p-12 text-center fade-in">
+            <div class="text-6xl sm:text-7xl md:text-9xl mb-4 sm:mb-6 cry-animation">😭</div>
             
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-4 sm:mb-6 px-2">
                 Oh no... mi corazón está roto 💔
             </h1>
             
-            <div class="space-y-4 text-gray-700 text-lg mb-8">
+            <div class="space-y-3 sm:space-y-4 text-gray-700 text-base sm:text-lg mb-6 sm:mb-8 px-2">
                 <p>Pero entiendo... tal vez necesites pensarlo mejor</p>
-                <p class="text-xl font-semibold text-pink-600">
+                <p class="text-lg sm:text-xl font-semibold text-pink-600">
                     Mi amor por ti seguirá siendo el mismo, siempre ❤️
                 </p>
             </div>
             
-            <div class="space-y-4">
-                <a href="{{ route('valentine.index') }}" class="inline-block px-12 py-4 bg-gradient-to-r from-pink-500 to-red-500 text-white text-xl font-bold rounded-full shadow-lg hover:scale-105 transform transition-all duration-300">
+            <div class="space-y-3 sm:space-y-4 px-2">
+                <a href="{{ route('valentine.index') }}" class="inline-block px-8 sm:px-12 py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-red-500 text-white text-lg sm:text-xl font-bold rounded-full shadow-lg hover:scale-105 transform transition-all duration-300">
                     Déjame intentarlo de nuevo 💕
                 </a>
                 
-                <p class="text-sm text-gray-500 pt-4">
+                <p class="text-xs sm:text-sm text-gray-500 pt-2 sm:pt-4">
                     (Sabes que siempre puedes cambiar de opinión 😊)
                 </p>
             </div>
             
-            <div class="mt-8 text-6xl">
+            <div class="mt-6 sm:mt-8 text-4xl sm:text-5xl md:text-6xl">
                 <span class="cry-animation">❤️‍🩹</span>
             </div>
         </div>
