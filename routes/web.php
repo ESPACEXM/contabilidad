@@ -1,24 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\TenantController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ChartAccountController;
-use App\Http\Controllers\JournalEntryController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProductCategoryController;
-use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\BudgetController;
-use App\Http\Controllers\FinancialPeriodController;
-use App\Http\Controllers\FinancialStatementController;
-use App\Http\Controllers\FinancialAnalysisController;
-use App\Http\Controllers\GeneralLedgerController;
+use App\Http\Controllers\ValentineController;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+// Ruta principal - Página de San Valentín
+Route::get('/', [ValentineController::class, 'index'])->name('valentine.index');
+Route::post('/respuesta', [ValentineController::class, 'answer'])->name('valentine.answer');
 
 // Endpoint de ping para keep-alive (sin middleware para que sea rápido)
 Route::get('/ping', function () {

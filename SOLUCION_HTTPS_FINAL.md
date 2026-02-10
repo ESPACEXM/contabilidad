@@ -54,3 +54,4 @@ Después del deploy, verifica:
    - Busca errores relacionados con HTTPS
    - Verifica que `URL::forceScheme('https')` se ejecute
 
+

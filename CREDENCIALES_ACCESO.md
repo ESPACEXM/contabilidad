@@ -75,3 +75,4 @@ Para cada empresa se crean las siguientes cuentas:
 3. Verifica que el usuario existe en la base de datos
 4. Intenta con el otro usuario: `juan@minegocio.com` / `password`
 
+

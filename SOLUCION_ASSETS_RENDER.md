@@ -61,3 +61,4 @@ Para diagnosticar correctamente, necesito:
 
 Con esta información podré identificar el problema exacto.
 
+

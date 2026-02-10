@@ -133,3 +133,4 @@ https://contabilidad-1-o9f5.onrender.com/ping
 - **Cron-Job.org:** https://cron-job.org
 - **Tu endpoint:** https://contabilidad-1-o9f5.onrender.com/up
 
+
